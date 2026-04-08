@@ -3,6 +3,19 @@ use crate::cert::CertManager;
 use crate::config::{AppConfig, LogCollector};
 use crate::error::InvokeResponse;
 use crate::error::OperationResult;
+
+fn append_models_path(api_url: &str, version_prefix: &str) -> String {
+    let url = api_url.trim_end_matches('/');
+    let has_version = url.ends_with("/v1")
+        || url.ends_with("/v2")
+        || url.ends_with("/v3")
+        || url.ends_with("/v4");
+    if has_version {
+        format!("{}/models", url)
+    } else {
+        format!("{}{}/models", url, version_prefix)
+    }
+}
 use crate::hosts;
 use crate::proxy::{self, ProxyConfig, ProxyStep};
 use crate::system_prompt::SystemPromptStore;
@@ -158,8 +171,29 @@ impl Services {
             );
         }
 
+        let upstream_route = if group.middle_route_enabled && !group.middle_route.is_empty() {
+            let route = group.middle_route.trim_start_matches('/');
+            let route_with_slash = format!("/{}", route);
+            if group
+                .api_url
+                .trim_end_matches('/')
+                .ends_with(&route_with_slash)
+            {
+                String::new()
+            } else {
+                route_with_slash
+            }
+        } else {
+            match group.provider.as_str() {
+                "anthropic" => "/v1".to_string(),
+                "gemini" => "/v1beta".to_string(),
+                _ => "/v1".to_string(),
+            }
+        };
+
         let proxy_config = ProxyConfig {
             inbound_route: "/v1".to_string(),
+            upstream_route,
             provider: group.provider.clone(),
             api_url: group.api_url.clone(),
             api_key: group.api_key.clone(),
@@ -357,8 +391,18 @@ impl Services {
         let group = &config_groups[index];
         let api_url = group.api_url.trim_end_matches('/');
 
+        let version_prefix: &str = if group.middle_route_enabled && !group.middle_route.is_empty() {
+            &group.middle_route
+        } else {
+            match group.provider.as_str() {
+                "anthropic" => "/v1",
+                "gemini" => "/v1beta",
+                _ => "/v1",
+            }
+        };
+
         let upstream_url = match group.provider.as_str() {
-            "anthropic" => format!("{}/v1/messages", api_url),
+            "anthropic" => format!("{}{}/messages", api_url, version_prefix),
             "gemini" => {
                 let model = if !group.target_model_id.is_empty() {
                     &group.target_model_id
@@ -366,11 +410,11 @@ impl Services {
                     &group.model_id
                 };
                 format!(
-                    "{}/v1beta/models/{}:generateContent?key={}",
-                    api_url, model, group.api_key
+                    "{}{}/models/{}:generateContent?key={}",
+                    api_url, version_prefix, model, group.api_key
                 )
             }
-            _ => format!("{}/v1/models", api_url),
+            _ => append_models_path(api_url, version_prefix),
         };
 
         collector.log(&format!("正在测试配置组 [{}] {} ...", index, group.name));
@@ -474,15 +518,27 @@ impl Services {
         provider: &str,
         api_url: &str,
         api_key: &str,
+        middle_route: &str,
     ) -> InvokeResponse {
         let log_bus = state.ensure_log_bus();
         let mut collector = LogCollector::new(Some(log_bus));
 
         let api_url = api_url.trim_end_matches('/');
+
+        let version_prefix: &str = if !middle_route.is_empty() {
+            middle_route
+        } else {
+            match provider {
+                "anthropic" => "/v1",
+                "gemini" => "/v1beta",
+                _ => "/v1",
+            }
+        };
+
         let upstream_url = match provider {
-            "anthropic" => format!("{}/v1/messages", api_url),
-            "gemini" => format!("{}/v1beta/models?key={}", api_url, api_key),
-            _ => format!("{}/v1/models", api_url),
+            "anthropic" => format!("{}{}/messages", api_url, version_prefix),
+            "gemini" => format!("{}{}/models?key={}", api_url, version_prefix, api_key),
+            _ => append_models_path(api_url, version_prefix),
         };
 
         collector.log(&format!("正在获取模型列表: {} ...", provider));

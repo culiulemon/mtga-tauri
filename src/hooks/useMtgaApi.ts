@@ -96,11 +96,13 @@ export function useMtgaApi() {
     provider?: string;
     apiUrl: string;
     apiKey?: string;
+    middleRoute?: string;
   }) =>
     safeInvoke<InvokeResponse>("config_group_models", {
       provider: opts.provider,
       apiUrl: opts.apiUrl,
       apiKey: opts.apiKey,
+      middleRoute: opts.middleRoute,
     });
 
   const systemPromptsList = () =>

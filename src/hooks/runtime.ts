@@ -8,7 +8,7 @@ let lastLogId = 0;
 
 export function useRuntime() {
   const api = useMtgaApi();
-  const { addLogs, setProxyRunning, addProxyStep, setAppInfo, clearProxySteps } = useMtgaStore();
+  const { addLogs, setProxyRunning, addProxyStep, setAppInfo, clearProxySteps, loadConfig } = useMtgaStore();
 
   const initRuntime = async () => {
     const runtimeVal = window.__MTGA_RUNTIME__;
@@ -32,6 +32,12 @@ export function useRuntime() {
       }
     } catch {
       console.error("获取启动状态失败");
+    }
+
+    try {
+      await loadConfig();
+    } catch {
+      console.error("加载配置失败");
     }
 
     startLogPolling();

@@ -15,6 +15,7 @@ use tokio::sync::{RwLock, mpsc};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ProxyConfig {
     pub inbound_route: String,
+    pub upstream_route: String,
     pub provider: String,
     pub api_url: String,
     pub api_key: String,
@@ -30,6 +31,7 @@ impl Default for ProxyConfig {
     fn default() -> Self {
         Self {
             inbound_route: "/v1".to_string(),
+            upstream_route: "/v1".to_string(),
             provider: "openai_chat_completion".to_string(),
             api_url: "https://api.openai.com".to_string(),
             api_key: String::new(),
@@ -150,10 +152,12 @@ async fn handle_openai_completions(
     req_body: Value,
     is_stream: bool,
 ) -> Response {
-    let upstream_url = format!(
-        "{}/v1/chat/completions",
-        state.config.api_url.trim_end_matches('/')
+    let base = format!(
+        "{}{}",
+        state.config.api_url.trim_end_matches('/'),
+        state.config.upstream_route
     );
+    let upstream_url = format!("{}/chat/completions", base);
 
     let mut upstream_headers = reqwest::header::HeaderMap::new();
     upstream_headers.insert(
@@ -239,7 +243,12 @@ async fn handle_anthropic_completions(
 ) -> Response {
     let anthropic_body = build_anthropic_request(&req_body, &state.config);
 
-    let upstream_url = format!("{}/v1/messages", state.config.api_url.trim_end_matches('/'));
+    let base = format!(
+        "{}{}",
+        state.config.api_url.trim_end_matches('/'),
+        state.config.upstream_route
+    );
+    let upstream_url = format!("{}/messages", base);
 
     let mut headers = reqwest::header::HeaderMap::new();
     headers.insert(
@@ -344,11 +353,14 @@ async fn handle_gemini_completions(
         }
     });
 
-    let upstream_url = format!(
-        "{}/v1beta/models/{}:generateContent?key={}",
+    let base = format!(
+        "{}{}",
         state.config.api_url.trim_end_matches('/'),
-        state.config.target_model_id,
-        state.config.api_key
+        state.config.upstream_route
+    );
+    let upstream_url = format!(
+        "{}/models/{}:generateContent?key={}",
+        base, state.config.target_model_id, state.config.api_key
     );
 
     match state
@@ -461,6 +473,25 @@ pub async fn start_proxy_server(
         done: false,
     });
 
+    let tls_config = tokio::time::timeout(
+        tokio::time::Duration::from_secs(10),
+        axum_server::tls_rustls::RustlsConfig::from_pem_file(&cert_path, &key_path),
+    )
+    .await
+    .map_err(|_| format!("TLS 证书加载超时 (cert: {}, key: {})", cert_path, key_path))?
+    .map_err(|e| {
+        format!(
+            "TLS 证书加载失败 (cert: {}, key: {}): {}",
+            cert_path, key_path, e
+        )
+    })?;
+
+    let _ = step_tx.send(ProxyStep {
+        step: "proxy".to_string(),
+        message: "TLS 证书加载成功".to_string(),
+        done: false,
+    });
+
     let client = Client::builder()
         .danger_accept_invalid_certs(config.disable_ssl_strict)
         .build()
@@ -483,30 +514,22 @@ pub async fn start_proxy_server(
 
     let addr = SocketAddr::from(([0, 0, 0, 0], port));
 
-    let _ = step_tx.send(ProxyStep {
-        step: "proxy".to_string(),
-        message: format!("代理服务器监听: https://0.0.0.0:{}", port),
-        done: false,
-    });
-
     let handle = ProxyServerHandle::default();
     let running = handle.running.clone();
     let axum_handle = handle.axum_handle.clone();
 
     *running.write().await = true;
 
+    let step_tx_clone = step_tx.clone();
     tokio::spawn(async move {
-        let tls_config =
-            match axum_server::tls_rustls::RustlsConfig::from_pem_file(cert_path, key_path).await {
-                Ok(cfg) => cfg,
-                Err(e) => {
-                    log::error!("TLS 配置失败: {}", e);
-                    return;
-                }
-            };
-
         let srv_handle = axum_server::Handle::new();
         *axum_handle.write().await = Some(srv_handle.clone());
+
+        let _ = step_tx_clone.send(ProxyStep {
+            step: "proxy".to_string(),
+            message: format!("代理服务器正在监听: https://0.0.0.0:{}", port),
+            done: false,
+        });
 
         let server = axum_server::bind_rustls(addr, tls_config)
             .handle(srv_handle)
@@ -514,6 +537,11 @@ pub async fn start_proxy_server(
 
         if let Err(e) = server.await {
             log::error!("代理服务器错误: {}", e);
+            let _ = step_tx_clone.send(ProxyStep {
+                step: "proxy".to_string(),
+                message: format!("代理服务器运行错误: {}", e),
+                done: false,
+            });
         }
 
         *running.write().await = false;

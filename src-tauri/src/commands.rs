@@ -260,12 +260,14 @@ pub async fn config_group_models(
     provider: Option<String>,
     api_url: String,
     api_key: Option<String>,
+    middle_route: Option<String>,
 ) -> Result<InvokeResponse, String> {
     Ok(Services::config_group_models(
         &state,
         provider.as_deref().unwrap_or("openai_chat_completion"),
         &api_url,
         api_key.as_deref().unwrap_or(""),
+        middle_route.as_deref().unwrap_or(""),
     )
     .await)
 }

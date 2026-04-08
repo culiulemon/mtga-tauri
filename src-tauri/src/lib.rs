@@ -16,9 +16,14 @@ use app_state::AppState;
 use log_bus::LogBus;
 use tauri::Emitter;
 use tauri::Manager;
+use tauri::menu::MenuEvent;
 use tauri::tray::TrayIconBuilder;
 
 pub fn run() {
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .expect("Failed to install rustls crypto provider");
+
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_log::Builder::new().build())
@@ -28,9 +33,31 @@ pub fn run() {
             let log_bus = LogBus::new();
             app.manage(log_bus.clone());
 
+            let show_item = tauri::menu::MenuItemBuilder::with_id("show", "显示窗口").build(app)?;
+            let quit_item = tauri::menu::MenuItemBuilder::with_id("quit", "退出").build(app)?;
+            let menu = tauri::menu::MenuBuilder::new(app)
+                .item(&show_item)
+                .separator()
+                .item(&quit_item)
+                .build()?;
+
+            let handle_for_menu = app.handle().clone();
             let _tray = TrayIconBuilder::with_id("main-tray")
                 .icon(app.default_window_icon().unwrap().clone())
                 .tooltip("MTGA - 一键启动全部服务")
+                .menu(&menu)
+                .on_menu_event(move |_tray, event: MenuEvent| match event.id.as_ref() {
+                    "show" => {
+                        if let Some(main_win) = handle_for_menu.get_webview_window("main") {
+                            let _ = main_win.show();
+                            let _ = main_win.set_focus();
+                        }
+                    }
+                    "quit" => {
+                        handle_for_menu.exit(0);
+                    }
+                    _ => {}
+                })
                 .on_tray_icon_event(move |_tray, event| {
                     if let tauri::tray::TrayIconEvent::Click {
                         button: tauri::tray::MouseButton::Left,
@@ -75,6 +102,16 @@ pub fn run() {
                     let _ = main.show();
                     let _ = main.set_focus();
                     let _ = splash.close();
+                }
+            });
+
+            let main_win: tauri::WebviewWindow = app
+                .get_webview_window("main")
+                .expect("main window not found");
+            main_win.clone().on_window_event(move |event| {
+                if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+                    api.prevent_close();
+                    let _ = main_win.hide();
                 }
             });
 

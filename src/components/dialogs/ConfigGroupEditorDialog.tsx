@@ -108,6 +108,7 @@ export default function ConfigGroupEditorDialog({
         provider,
         apiUrl,
         apiKey,
+        middleRoute: middleRouteEnabled ? middleRoute : "",
       });
       if (res.ok) {
         const details = res.details as Record<string, unknown> | undefined;
@@ -119,7 +120,7 @@ export default function ConfigGroupEditorDialog({
     } finally {
       setModelLoading(false);
     }
-  }, [api, provider, apiUrl, apiKey, modelLoading]);
+  }, [api, provider, apiUrl, apiKey, middleRoute, middleRouteEnabled, modelLoading]);
 
   const handleSave = useCallback(() => {
     setFormError("");

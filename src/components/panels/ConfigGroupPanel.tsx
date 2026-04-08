@@ -201,7 +201,7 @@ export default function ConfigGroupPanel() {
           >
             删除
           </button>
-          <div className="divider my-1" />
+          <hr className="border-slate-200/60 my-1" />
           <button
             className="mtga-btn-outline w-full text-xs"
             disabled={selectedIndex === null || selectedIndex === 0}
@@ -216,7 +216,7 @@ export default function ConfigGroupPanel() {
           >
             ↓ 下移
           </button>
-          <div className="divider my-1" />
+          <hr className="border-slate-200/60 my-1" />
           <button
             className={`mtga-btn-outline w-full text-xs ${testingIndex === selectedIndex ? "loading" : ""}`}
             disabled={selectedIndex === null}
