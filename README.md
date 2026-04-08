@@ -1,14 +1,18 @@
 # MTGA
 
 <picture>
-    <img alt="MTGA" src="https://github.com/BiFangKNT/mtga/blob/gui/icons/hero-img_f0bb32.png?raw=true">
+    <img alt="MTGA" src="https://github.com/culiulemon/mtga-tauri/blob/main/icons/hero-img_f0bb32.png?raw=true">
 </picture>
 
 [![English](https://img.shields.io/badge/docs-English-purple)](docs/README.en.md) [![简体中文](https://img.shields.io/badge/文档-简体中文-yellow)](README.md) [![日本語](https://img.shields.io/badge/ドキュ-日本語-b7003a)](docs/README.ja.md) [![한국어 문서](https://img.shields.io/badge/docs-한국어-green)](docs/README.ko.md) [![Documentación en Español](https://img.shields.io/badge/docs-Español-orange)](docs/README.es.md) [![Documentation en Français](https://img.shields.io/badge/docs-Français-blue)](docs/README.fr.md) [![Documentação em Português (Brasil)](https://img.shields.io/badge/docs-Português-purple)](docs/README.pt.md) [![Dokumentation auf Deutsch](https://img.shields.io/badge/docs-Deutsch-darkgreen)](docs/README.de.md) [![Документация на русском языке](https://img.shields.io/badge/доки-Русский-darkblue)](docs/README.ru.md)
 
+[![Tauri v2](https://img.shields.io/badge/Tauri-v2-blue?logo=tauri)](https://v2.tauri.app/) [![React 19](https://img.shields.io/badge/React-19-61dafb?logo=react)](https://react.dev/) [![Rust](https://img.shields.io/badge/Rust-2024-edition-dea584?logo=rust)](https://www.rust-lang.org/) [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)](LICENSE)
+
 ## 简介
 
 MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适用于 Windows 和 macOS。
+
+基于 [Tauri v2](https://v2.tauri.app/) 构建，前端使用 React 19 + Tailwind CSS + daisyUI，后端使用 Rust，提供轻量、高性能的原生桌面体验。
 
 **注意：从 `v2.4.0` 起，MTGA 下游统一暴露 OpenAI Chat Completions API；后端通过 LiteLLM 转发到 `openai_chat_completion`、`openai_response`、Anthropic、Gemini 等上游。上游类型通过配置组里的“提供商”字段显式指定；其中 `openai_response` 会由 MTGA 在代理层完成 chat-completions 与 responses 之间的转换。限制见 [docs/provider-support.md](docs/provider-support.md)。**
 
@@ -45,7 +49,10 @@ MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适�
 
 ## 更新日志
 
-最新日志详见： [最新发行版](https://github.com/BiFangKNT/mtga/releases/latest)
+最新日志详见：
+
+- [GitHub 最新发行版](https://github.com/culiulemon/mtga-tauri/releases/latest)
+- [GitCode 最新发行版](https://gitcode.com/Nicek/mtga-tauri/releases/latest)
 
 历史日志归档： [CHANGELOG.md](CHANGELOG.md)
 
@@ -57,17 +64,21 @@ MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适�
 
 #### Windows
 
-1. 从 [GitHub Releases](https://github.com/BiFangKNT/mtga/releases) 下载最新版本的 `MTGA_v{version}_windows_x64-setup.exe`
+1. 从以下地址下载最新版本的安装包：
+   - [GitHub 下载](https://github.com/culiulemon/mtga-tauri/releases)
+   - [GitCode 下载](https://gitcode.com/Nicek/mtga-tauri/releases)
 2. 双击安装
 
 #### macOS
 
-1. 从 [GitHub Releases](https://github.com/BiFangKNT/mtga/releases) 下载最新版本的 `MTGA_v{version}_apple_{arch}.dmg`
+1. 从以下地址下载最新版本的 DMG：
+   - [GitHub 下载](https://github.com/culiulemon/mtga-tauri/releases)
+   - [GitCode 下载](https://gitcode.com/Nicek/mtga-tauri/releases)
    - `{arch}` 为指令集架构：
      - `x64`：Intel 处理器
      - `aarch64`：Apple Silicon 处理器（M 系列）
 2. 双击 DMG 文件，系统会自动挂载安装包
-3. 将 `MTGA_GUI.app` 拖拽到 `Applications` 文件夹
+3. 将 `MTGA.app` 拖拽到 `Applications` 文件夹
 
 ### 使用
 
@@ -100,9 +111,9 @@ MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适�
 > - macOS 端如提示“包已损坏”，请参考 [macOS 解决 “包已损坏” 问题](#macos-解决-包已损坏-问题)
 > - 如 trae 端添加模型失败，请参考 [trae 端提示 “添加模型失败” 的排查方案](#trae-端提示-添加模型失败-的排查方案)
 
-## macOS 解决 “包已损坏” 问题
+## macOS 解决 "包已损坏" 问题
 
-如果启动 `MTGA_GUI.app` 时弹出这样的提示：
+如果启动 `MTGA.app` 时弹出这样的提示：
 
 <img width="244" height="223" alt="app corrupted" src="./images/app-corrupted.png?raw=true" />
 
@@ -113,21 +124,21 @@ MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适�
 1. 到 [Sentinel Releases](https://github.com/alienator88/Sentinel/releases/latest) 下载 `Sentinel.dmg`
 2. 双击 `Sentinel.dmg` 文件，将 `Sentinel.app` 拖拽到 `Applications` 文件夹
 3. 从启动台或 Applications 文件夹启动 `Sentinel.app`
-4. 将本项目的 `MTGA_GUI.app` 拖拽到 `Sentinel.app` 的左侧窗口中
+4. 将本项目的 `MTGA.app` 拖拽到 `Sentinel.app` 的左侧窗口中
    - <img width="355.33" height="373.33" alt="sentinel add app" src="./images/sentinel-add-app.png?raw=true" />
 
-`MTGA_GUI.app` 将被自动处理并启动
+`MTGA.app` 将被自动处理并启动
 
 ### cli 解决方案
 
-1. 找到 `MTGA_GUI.app` 完整路径，如 `/Applications/MTGA_GUI.app`。
+1. 找到 `MTGA.app` 完整路径，如 `/Applications/MTGA.app`。
 2. 打开终端（Terminal）应用程序。
-3. 执行以下命令签名 `MTGA_GUI.app`：
+3. 执行以下命令签名 `MTGA.app`：
    ```zsh
    xattr -d com.apple.quarantine <应用完整路径>
    ```
-   这会移除 `MTGA_GUI.app` 中的 `com.apple.quarantine` 扩展属性。
-4. 启动 `MTGA_GUI.app`。
+   这会移除 `MTGA.app` 中的 `com.apple.quarantine` 扩展属性。
+4. 启动 `MTGA.app`。
 
 ## trae 端提示 “添加模型失败” 的排查方案
 
@@ -188,7 +199,7 @@ MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适�
 
 点击仓库右上角 Star 和 Watch 按钮，获取最新动态。
 
-![star to keep latest](https://github.com/BiFangKNT/mtga/blob/gui/images/star-to-keep-latest.gif?raw=true)
+![star to keep latest](https://github.com/culiulemon/mtga-tauri/blob/main/images/star-to-keep-latest.gif?raw=true)
 
 ---
 
@@ -200,9 +211,10 @@ MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适�
 
 为避免模块耦合失控，项目遵循以下分层与依赖规则：
 
-- UI -> actions -> services -> 领域模块（cert/hosts/network/proxy/update）-> runtime/platform
-- UI 不得直接依赖领域模块，所有操作通过 actions/services 统一编排。
-- 平台相关逻辑放在 `modules/platform`。
+- 前端：`src/`（React + Tailwind CSS + daisyUI）
+- 后端：`src-tauri/`（Rust + Tauri v2）
+- UI 不得直接依赖 Rust 命令，所有操作通过 Tauri invoke 统一编排。
+- 平台相关逻辑放在 Rust 后端处理。
 
 ## 友链
 
@@ -214,10 +226,10 @@ MTGA 是一个基于本地代理的 IDE 固定模型服务商解决方案，适�
 
 ## Star History
 
-<a href="https://www.star-history.com/#BiFangKNT/mtga&type=date&legend=top-left">
+<a href="https://www.star-history.com/#culiulemon/mtga-tauri&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=BiFangKNT/mtga&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=BiFangKNT/mtga&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=BiFangKNT/mtga&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=culiulemon/mtga-tauri&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=culiulemon/mtga-tauri&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=culiulemon/mtga-tauri&type=date&legend=top-left" />
  </picture>
 </a>
