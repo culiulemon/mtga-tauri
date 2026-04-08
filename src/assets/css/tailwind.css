@@ -1,0 +1,154 @@
+@import "tailwindcss";
+
+@plugin "daisyui" {
+  themes: light --default;
+}
+
+@theme {
+  --color-primary: #f0bb32;
+  --color-primary-content: #1e293b;
+  --color-mtga-bg: #f7f8fb;
+  --color-mtga-surface: #ffffff;
+  --color-mtga-surface-soft: #f3f6fa;
+  --color-mtga-border: #e5e7eb;
+  --color-mtga-accent: #f0bb32;
+  --color-mtga-accent-strong: #d9a307;
+  --color-mtga-warn: #f59e0b;
+  --color-mtga-text: #0f172a;
+  --color-mtga-text-muted: #64748b;
+
+  @keyframes bounce-subtle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-2px); }
+  }
+  --animate-bounce-subtle: bounce-subtle 2s ease-in-out infinite;
+}
+
+@layer base {
+  .input:focus, .textarea:focus, .input:focus-within, .textarea:focus-within {
+    outline: 2px solid transparent !important;
+    outline-offset: 2px !important;
+  }
+
+  :root, [data-theme] {
+    --color-primary: #f0bb32 !important;
+    --color-primary-content: #1e293b !important;
+    --mtga-bg: #f7f8fb;
+    --mtga-surface: #ffffff;
+    --mtga-surface-soft: #f3f6fa;
+    --mtga-border: #e5e7eb;
+    --mtga-accent: #f0bb32;
+    --mtga-accent-strong: #d9a307;
+    --mtga-warn: #f59e0b;
+    --mtga-text: #0f172a;
+    --mtga-text-muted: #64748b;
+  }
+
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: var(--mtga-border);
+    border-radius: 10px;
+    border: 1px solid transparent;
+    background-clip: padding-box;
+    transition: background 0.2s ease;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--mtga-accent);
+    border: 1px solid transparent;
+    background-clip: padding-box;
+  }
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--mtga-border) transparent;
+  }
+
+  .mtga-log-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+  .mtga-log-scroll::-webkit-scrollbar-track { background: transparent; border-radius: 9999px; }
+  .mtga-log-scroll::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--mtga-text-muted) 30%, transparent);
+    border-radius: 9999px;
+    border: 1px solid transparent;
+  }
+  .mtga-log-scroll::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--mtga-accent) 60%, transparent);
+  }
+  .mtga-log-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--mtga-text-muted) 30%, transparent) transparent;
+  }
+
+  body {
+    background-color: var(--mtga-bg);
+    background-image:
+      radial-gradient(circle at 15% 15%, rgba(251, 191, 36, 0.15), transparent 50%),
+      radial-gradient(circle at 85% 85%, rgba(251, 113, 133, 0.05), transparent 40%),
+      linear-gradient(135deg, #fffbeb 0%, #fff9e6 45%, #fff2e0 100%);
+    color: var(--mtga-text);
+  }
+}
+
+@utility mtga-btn-primary {
+  @apply btn btn-primary btn-sm w-full rounded-xl shadow-sm;
+}
+@utility mtga-btn-error {
+  @apply btn btn-outline btn-sm rounded-xl border-slate-200 text-error hover:bg-error/10 hover:border-error w-full;
+}
+@utility mtga-btn-outline {
+  @apply btn btn-outline btn-sm rounded-xl border-slate-200 hover:border-amber-500 hover:bg-amber-50/50 hover:text-amber-600 w-full;
+}
+@utility mtga-badge-new {
+  @apply absolute flex h-3.5 px-1.5 items-center justify-center rounded-full bg-amber-500 text-[9px] font-bold text-white shadow-sm ring-1 ring-white animate-bounce-subtle antialiased;
+  font-variant-numeric: tabular-nums;
+  padding-top: 1px;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+@utility mtga-btn-dialog {
+  @apply btn btn-sm h-10 px-6 rounded-xl transition-all active:scale-[0.98];
+}
+@utility mtga-btn-dialog-primary {
+  @apply mtga-btn-dialog btn-primary font-bold shadow-lg shadow-primary/20;
+}
+@utility mtga-btn-dialog-error {
+  @apply mtga-btn-dialog btn-error text-white font-bold shadow-lg shadow-error/20;
+}
+@utility mtga-btn-dialog-ghost {
+  @apply mtga-btn-dialog btn-ghost text-slate-500;
+}
+
+@layer components {
+  .mtga-input-wrapper {
+    @apply relative w-full flex items-center bg-white/80 rounded-xl transition-all border border-slate-200 overflow-hidden;
+  }
+  .mtga-input-wrapper:hover {
+    @apply border-amber-500/30 bg-amber-50/30 shadow-[0_0_10px_rgba(245,158,11,0.2)] shadow-amber-500/30;
+  }
+  .mtga-input-wrapper:focus-within {
+    @apply border-amber-500/60 ring-amber-500/60 bg-amber-50/60;
+  }
+  .mtga-input {
+    @apply flex-1 bg-transparent h-10 px-4 text-sm outline-none w-full;
+  }
+  .mtga-input-clear {
+    @apply flex items-center justify-center w-6 h-6 rounded-full hover:bg-slate-200/50 text-slate-400 hover:text-slate-600 opacity-0 transition-all cursor-pointer mr-1;
+  }
+  .mtga-input-wrapper:hover .mtga-input-clear,
+  .mtga-input-wrapper:focus-within .mtga-input-clear {
+    @apply opacity-100;
+  }
+  .mtga-card {
+    @apply rounded-2xl border border-slate-200/70 bg-white/40 backdrop-blur-sm shadow-[0_18px_45px_-32px_rgba(15,23,42,0.2)];
+  }
+  .mtga-card-body { @apply p-5; }
+  .mtga-card-title { @apply text-base font-semibold tracking-tight text-slate-900; }
+  .mtga-card-subtitle { @apply text-xs text-slate-500; }
+  .mtga-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/30 px-3 py-1 text-xs text-slate-600 shadow-sm;
+  }
+  .mtga-label-text { @apply text-xs text-slate-500; }
+  .mtga-label-required::before {
+    content: "*";
+    @apply text-error mr-1 inline-block align-middle;
+  }
+}

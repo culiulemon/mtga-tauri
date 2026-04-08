@@ -5,10 +5,9 @@
   "identifier": "com.mtga.tauri",
   "build": {
     "frontendDist": "../dist",
-    "devUrl": "http://localhost:3000",
+    "devUrl": "http://localhost:5173",
     "beforeDevCommand": "pnpm dev",
-    "beforeBuildCommand": "pnpm generate",
-    "removeUnusedCommands": true
+    "beforeBuildCommand": "pnpm build"
   },
   "app": {
     "withGlobalTauri": true,
@@ -36,14 +35,15 @@
     ],
     "security": {
       "csp": null
+    },
+    "trayIcon": {
+      "iconPath": "icons/icon.ico",
+      "iconAsTemplate": false
     }
   },
   "bundle": {
     "active": true,
     "targets": ["nsis", "dmg"],
-    "resources": {
-      "pyembed/python": "./"
-    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -52,9 +52,7 @@
       "icons/icon.ico"
     ],
     "windows": {
-      "wix": {
-        "language": "zh-CN"
-      },
+      "wix": { "language": "zh-CN" },
       "nsis": {
         "languages": ["SimpChinese"],
         "displayLanguageSelector": true,
